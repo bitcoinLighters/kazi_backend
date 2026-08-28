@@ -21,7 +21,8 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   lndRestUrl: process.env.LND_REST_URL || 'http://127.0.0.1:8080',
   lndMacaroon: process.env.LND_MACAROON || '',
-  lndTlsCertPath: process.env.LND_TLS_CERT_PATH || ''
+  lndTlsCertPath: process.env.LND_TLS_CERT_PATH || '',
+  connectDatabase: process.env.CONNECT_DATABASE === 'true'
 };
 
 export const getMongoUri = () => env.mongoUri || required('MONGODB_URI');

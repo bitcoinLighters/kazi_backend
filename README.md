@@ -75,6 +75,7 @@ Check that the server is running:
 ```text
 GET http://localhost:5000/
 GET http://localhost:5000/api/health
+GET http://localhost:5000/api-docs
 ```
 
 ## Environment variables
@@ -91,7 +92,7 @@ GET http://localhost:5000/api/health
 | `LND_MACAROON` | No for scaffold | LND authentication credential |
 | `LND_TLS_CERT_PATH` | No for scaffold | Local LND TLS certificate path |
 
-`*` Either `MONGODB_URI` or `MONGO_URI_NOT_SRV` must be available at startup. The scaffold currently fails fast if Atlas cannot be reached.
+`*` Either `MONGODB_URI` or `MONGO_URI_NOT_SRV` must be available when `CONNECT_DATABASE=true`. For the current backend-only scaffold, database connection is disabled by default and data is held in memory until your colleague supplies the Atlas repository/models.
 
 ## Planned API contract
 
@@ -123,4 +124,3 @@ For the one-day MVP, file uploads can initially be represented by a URL or filen
 4. Implement submission and client review flows.
 5. Add a mock payment service for the demo, then connect Polar/LND.
 6. Add balance/history endpoints and integration tests for the complete demo path.
-
