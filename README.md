@@ -43,20 +43,27 @@ Keep secrets in `atlas-credentials.env` or `.env`; both are ignored by git. Neve
 
 ```text
 src/
-  app.js                 Express middleware and route registration
+  app.js                 Express middleware, route registration, Swagger UI
   server.js              Database connection and HTTP startup
   config/
     env.js               Environment loading and configuration
     database.js          MongoDB connection lifecycle
+    openapi.js           OpenAPI/Swagger spec (served at /api-docs)
   routes/
-    index.js             API route registry
+    index.js             API route registry (mounts the controllers below)
     health.routes.js     Health check
-  controllers/           HTTP request handlers (next implementation slice)
-  middleware/            Auth, validation, and error middleware
-  models/                Mongoose schemas
-  services/              Task, wallet, and Lightning business logic
-  utils/                 Shared helpers
+  controllers/           HTTP request handlers for each resource
+  middleware/            Auth (JWT) and role middleware
+  models/                Mongoose schemas (User, Task, Submission, Payment, Wallet)
+  services/              Auth, task, wallet, and payment business logic
+  utils/                 ApiError and shared helpers
+  # Preserved in-memory scaffold (not mounted; reference only):
+  routes/*.routes.js     Collaborator scaffold routes (in-memory adapter)
+  store/memory.store.js  Temporary Map-based adapter
+  docs/swagger.js        Collaborator scaffold Swagger spec
 ```
+
+MongoDB Atlas is the active data layer. The collaborator's in-memory scaffold in `src/store/` and `src/routes/*.routes.js` is preserved in the repo for reference but is **not mounted** by `routes/index.js`; the Atlas-based controllers handle all traffic.
 
 ## Setup
 
@@ -87,6 +94,7 @@ GET http://localhost:5000/api-docs
 | `MONGODB_USERNAME` | Optional | Atlas username supplied by onboarding |
 | `MONGODB_PASSWORD` | Optional | Atlas password supplied by onboarding |
 | `PORT` | No | HTTP port, defaults to `5000` |
+| `CONNECT_DATABASE` | No | Set `false` to skip the Atlas connection (uses in-memory scaffold). Defaults to connected |
 | `JWT_SECRET` | No for scaffold | Signing key for authentication |
 | `LND_REST_URL` | No for scaffold | Polar/LND REST endpoint |
 | `LND_MACAROON` | No for scaffold | LND authentication credential |
@@ -96,7 +104,7 @@ GET http://localhost:5000/api-docs
 | `LNBITS_INVOICE_KEY` | Required for payment | Backend-only key used to decode/check invoices |
 | `LNBITS_TIMEOUT_MS` | No | LNbits request timeout, defaults to `15000` |
 
-`*` Either `MONGODB_URI` or `MONGO_URI_NOT_SRV` must be available when `CONNECT_DATABASE=true`. For the current backend-only scaffold, database connection is disabled by default and data is held in memory until your colleague supplies the Atlas repository/models.
+`*` Either `MONGODB_URI` or `MONGO_URI_NOT_SRV` must be available at startup. MongoDB Atlas is the active data layer and connects by default; set `CONNECT_DATABASE=false` to disable it (for a backend-only run using the preserved in-memory scaffold in `src/store/memory.store.js`).
 
 ## Lightning payment flow
 

@@ -4,7 +4,7 @@ import { env } from './config/env.js';
 
 try {
   if (env.connectDatabase) await connectDatabase();
-  else console.log('Database connection disabled; using temporary in-memory store');
+  else console.log('Database connection disabled via CONNECT_DATABASE=false');
   app.listen(env.port, () => console.log(`Kazi API listening on http://localhost:${env.port}`));
 } catch (error) {
   console.error('Startup failed:', error.message);
