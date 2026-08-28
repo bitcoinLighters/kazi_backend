@@ -3,7 +3,8 @@ import { Task } from '../models/Task.js';
 import { Submission } from '../models/Submission.js';
 import { Payment } from '../models/Payment.js';
 import { Wallet } from '../models/Wallet.js';
-import { paymentService } from './payment.service.js';
+import { lnbitsPaymentService } from './lnbits.service.js';
+import { createWorkerInvoice } from './worker-wallet.service.js';
 import { ApiError } from '../utils/ApiError.js';
 
 const PLATFORM_FEE_SATS = 0;
@@ -48,15 +49,27 @@ async function approveSubmissionInternal(submissionId, clientId, { initiate = tr
     throw ApiError.conflict('Payment already pending', 'PAYMENT_PENDING');
   }
 
-  const invoiceResult = await paymentService.createInvoice(task.rewardSats);
-  payment.lightningInvoice = invoiceResult.invoice;
-  payment.paymentHash = invoiceResult.paymentHash || payment.paymentHash;
+  let workerInvoice = submission.lightningInvoice;
+  if (!workerInvoice) {
+    const generated = await createWorkerInvoice(task.rewardSats, `Kazi payout: ${task.title}`);
+    workerInvoice = generated.invoice;
+    submission.lightningInvoice = workerInvoice;
+    await submission.save();
+  }
+
+  // The worker owns this invoice. The employer only approves; Kazi pays it.
+  payment.lightningInvoice = workerInvoice;
   payment.status = 'pending';
   await payment.save();
 
-  const confirmation = await paymentService.waitForConfirmation(payment.paymentHash || invoiceResult.paymentHash);
+  const paymentResult = await lnbitsPaymentService.payInvoice(workerInvoice);
+  payment.paymentHash = paymentResult.paymentHash || payment.paymentHash;
+  await payment.save();
+  const confirmation = payment.paymentHash
+    ? await lnbitsPaymentService.checkPayment(payment.paymentHash)
+    : { paid: true };
 
-  if (confirmation.settled) {
+  if (confirmation.paid) {
     payment.status = 'confirmed';
     await payment.save();
 

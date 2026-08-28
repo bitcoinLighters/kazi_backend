@@ -29,6 +29,10 @@ export const env = {
   lnbitsAdminKey: process.env.LNBITS_ADMIN_KEY || '',
   lnbitsInvoiceKey: process.env.LNBITS_INVOICE_KEY || '',
   lnbitsTimeoutMs: Number(process.env.LNBITS_TIMEOUT_MS || 15000)
+  ,workerLndRestUrl: (process.env.WORKER_LND_REST_URL || '').replace(/\/$/, ''),
+  workerLndMacaroon: process.env.WORKER_LND_MACAROON || '',
+  workerLndMacaroonPath: process.env.WORKER_LND_MACAROON_PATH || '',
+  workerLndTlsCertPath: process.env.WORKER_LND_TLS_CERT_PATH || ''
 };
 
 const stripQuotes = (value = '') => value.replace(/^"|"$/g, '').trim();

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { signup, login } from '../services/auth.service.js';
 import { ApiError } from '../utils/ApiError.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -37,6 +38,14 @@ router.post('/login', async (req, res, next) => {
     if (!email || !password) throw ApiError.badRequest('email and password are required');
     const result = await login({ email, password });
     res.json({ success: true, user: result.user, token: result.token });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/me', authenticate, async (req, res, next) => {
+  try {
+    res.json({ success: true, user: req.user });
   } catch (error) {
     next(error);
   }

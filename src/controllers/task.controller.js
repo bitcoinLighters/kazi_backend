@@ -107,8 +107,8 @@ router.post('/:id/accept', requireRole('youth'), async (req, res, next) => {
 
 router.post('/:id/submissions', requireRole('youth'), async (req, res, next) => {
   try {
-    const { text, fileUrl } = req.body;
-    const submission = await submitWork(req.params.id, req.userId, { text, fileUrl });
+    const { text, fileUrl, lightningInvoice, invoice } = req.body;
+    const submission = await submitWork(req.params.id, req.userId, { text, fileUrl, lightningInvoice: lightningInvoice || invoice });
     res.status(201).json({ success: true, submission });
   } catch (error) {
     next(error);

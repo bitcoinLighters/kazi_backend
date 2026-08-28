@@ -6,6 +6,7 @@ const submissionSchema = new mongoose.Schema(
     youthId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     text: { type: String, trim: true, default: '' },
     fileUrl: { type: String, trim: true, default: '' },
+    lightningInvoice: { type: String, trim: true, default: '' },
     status: {
       type: String,
       enum: ['submitted', 'changes_requested', 'approved'],

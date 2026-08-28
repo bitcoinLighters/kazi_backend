@@ -74,7 +74,7 @@ export async function acceptTask(taskId, youthId) {
   return task;
 }
 
-export async function submitWork(taskId, youthId, { text, fileUrl }) {
+export async function submitWork(taskId, youthId, { text, fileUrl, lightningInvoice }) {
   if (!mongoose.isValidObjectId(taskId)) throw ApiError.badRequest('Invalid task id');
   if (!text && !fileUrl) throw ApiError.badRequest('submission needs text or fileUrl');
 
@@ -87,7 +87,7 @@ export async function submitWork(taskId, youthId, { text, fileUrl }) {
     throw ApiError.forbidden('Only the assigned youth can submit work');
   }
 
-  const submission = await Submission.create({ taskId, youthId, text, fileUrl });
+  const submission = await Submission.create({ taskId, youthId, text, fileUrl, lightningInvoice });
   task.status = 'reviewing';
   await task.save();
   return submission;
@@ -145,5 +145,6 @@ export async function listVisibleSubmissions(user) {
   }
   return Submission.find(query)
     .populate('taskId', 'title category status rewardSats')
+    .populate('youthId', 'name email')
     .sort({ createdAt: -1 });
 }
