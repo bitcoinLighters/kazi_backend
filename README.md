@@ -43,20 +43,27 @@ Keep secrets in `atlas-credentials.env` or `.env`; both are ignored by git. Neve
 
 ```text
 src/
-  app.js                 Express middleware and route registration
+  app.js                 Express middleware, route registration, Swagger UI
   server.js              Database connection and HTTP startup
   config/
     env.js               Environment loading and configuration
     database.js          MongoDB connection lifecycle
+    openapi.js           OpenAPI/Swagger spec (served at /api-docs)
   routes/
-    index.js             API route registry
+    index.js             API route registry (mounts the controllers below)
     health.routes.js     Health check
-  controllers/           HTTP request handlers (next implementation slice)
-  middleware/            Auth, validation, and error middleware
-  models/                Mongoose schemas
-  services/              Task, wallet, and Lightning business logic
-  utils/                 Shared helpers
+  controllers/           HTTP request handlers for each resource
+  middleware/            Auth (JWT) and role middleware
+  models/                Mongoose schemas (User, Task, Submission, Payment, Wallet)
+  services/              Auth, task, wallet, and payment business logic
+  utils/                 ApiError and shared helpers
+  # Preserved in-memory scaffold (not mounted; reference only):
+  routes/*.routes.js     Collaborator scaffold routes (in-memory adapter)
+  store/memory.store.js  Temporary Map-based adapter
+  docs/swagger.js        Collaborator scaffold Swagger spec
 ```
+
+MongoDB Atlas is the active data layer. The collaborator's in-memory scaffold in `src/store/` and `src/routes/*.routes.js` is preserved in the repo for reference but is **not mounted** by `routes/index.js`; the Atlas-based controllers handle all traffic.
 
 ## Setup
 
@@ -75,6 +82,7 @@ Check that the server is running:
 ```text
 GET http://localhost:5000/
 GET http://localhost:5000/api/health
+GET http://localhost:5000/api-docs
 ```
 
 ## Environment variables
@@ -86,12 +94,13 @@ GET http://localhost:5000/api/health
 | `MONGODB_USERNAME` | Optional | Atlas username supplied by onboarding |
 | `MONGODB_PASSWORD` | Optional | Atlas password supplied by onboarding |
 | `PORT` | No | HTTP port, defaults to `5000` |
+| `CONNECT_DATABASE` | No | Set `false` to skip the Atlas connection (uses in-memory scaffold). Defaults to connected |
 | `JWT_SECRET` | No for scaffold | Signing key for authentication |
 | `LND_REST_URL` | No for scaffold | Polar/LND REST endpoint |
 | `LND_MACAROON` | No for scaffold | LND authentication credential |
 | `LND_TLS_CERT_PATH` | No for scaffold | Local LND TLS certificate path |
 
-`*` Either `MONGODB_URI` or `MONGO_URI_NOT_SRV` must be available at startup. The scaffold currently fails fast if Atlas cannot be reached.
+`*` Either `MONGODB_URI` or `MONGO_URI_NOT_SRV` must be available at startup. MongoDB Atlas is the active data layer and connects by default; set `CONNECT_DATABASE=false` to disable it (for a backend-only run using the preserved in-memory scaffold in `src/store/memory.store.js`).
 
 ## Planned API contract
 
@@ -123,4 +132,3 @@ For the one-day MVP, file uploads can initially be represented by a URL or filen
 4. Implement submission and client review flows.
 5. Add a mock payment service for the demo, then connect Polar/LND.
 6. Add balance/history endpoints and integration tests for the complete demo path.
-

@@ -1,11 +1,20 @@
 import { Router } from 'express';
 import { authenticate, requireRole } from '../middleware/auth.js';
-import { getSubmissionForUser, requestChanges } from '../services/task.service.js';
+import { getSubmissionForUser, requestChanges, listVisibleSubmissions } from '../services/task.service.js';
 import { approveSubmission } from '../services/payment.service.biz.js';
 
 const router = Router();
 
 router.use(authenticate);
+
+router.get('/', async (req, res, next) => {
+  try {
+    const submissions = await listVisibleSubmissions(req.user);
+    res.json({ success: true, submissions });
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.get('/:id', async (req, res, next) => {
   try {

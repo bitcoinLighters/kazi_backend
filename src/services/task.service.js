@@ -125,3 +125,25 @@ export async function requestChanges(submissionId, clientId) {
   await submission.taskId.save();
   return { submission, task: submission.taskId };
 }
+
+export async function listClientTasks(clientId) {
+  return Task.find({ clientId }).sort({ createdAt: -1 });
+}
+
+export async function listYouthTasks(youthId) {
+  return Task.find({ assignedYouthId: youthId }).sort({ createdAt: -1 });
+}
+
+export async function listVisibleSubmissions(user) {
+  let query;
+  if (user.role === 'client') {
+    const clientTasks = await Task.find({ clientId: user._id }).select('_id');
+    const taskIds = clientTasks.map((t) => t._id);
+    query = { taskId: { $in: taskIds } };
+  } else {
+    query = { youthId: user._id };
+  }
+  return Submission.find(query)
+    .populate('taskId', 'title category status rewardSats')
+    .sort({ createdAt: -1 });
+}

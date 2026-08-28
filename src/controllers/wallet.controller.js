@@ -24,4 +24,11 @@ router.get('/earnings', requireRole('youth'), async (req, res, next) => {
   }
 });
 
+router.post('/withdraw', requireRole('youth'), (_req, res) => {
+  res.status(501).json({
+    success: false,
+    message: 'Mobile-money withdrawal is a stretch feature and is not implemented yet'
+  });
+});
+
 export default router;

@@ -326,6 +326,42 @@ export const openapiSpec = {
           200: { description: 'Earnings list', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, earnings: { type: 'array', items: { $ref: '#/components/schemas/Payment' } } } } } } }
         }
       }
+    },
+    '/wallet/withdraw': {
+      post: {
+        tags: ['Wallet'],
+        summary: 'Withdraw sats to mobile money (stretch, not implemented)',
+        responses: {
+          501: { description: 'Not implemented' }
+        }
+      }
+    },
+    '/tasks/client/mine': {
+      get: {
+        tags: ['Tasks'],
+        summary: 'List tasks posted by the current client',
+        responses: {
+          200: { description: 'Client task list', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, tasks: { type: 'array', items: { $ref: '#/components/schemas/Task' } } } } } } }
+        }
+      }
+    },
+    '/tasks/youth/mine': {
+      get: {
+        tags: ['Tasks'],
+        summary: 'List tasks accepted by the current youth',
+        responses: {
+          200: { description: 'Youth task list', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, tasks: { type: 'array', items: { $ref: '#/components/schemas/Task' } } } } } } }
+        }
+      }
+    },
+    '/submissions': {
+      get: {
+        tags: ['Submissions'],
+        summary: 'List submissions visible to the current user',
+        responses: {
+          200: { description: 'Submission list', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, submissions: { type: 'array', items: { $ref: '#/components/schemas/Submission' } } } } } } }
+        }
+      }
     }
   }
 };

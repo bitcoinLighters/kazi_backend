@@ -4,6 +4,8 @@ import {
   createTask,
   listTasks,
   listRecommendedTasks,
+  listClientTasks,
+  listYouthTasks,
   getTaskForUser,
   acceptTask,
   submitWork
@@ -17,6 +19,24 @@ router.use(authenticate);
 router.get('/', requireRole('youth'), async (req, res, next) => {
   try {
     const tasks = await listTasks({ category: req.query.category, status: req.query.status });
+    res.json({ success: true, tasks });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/client/mine', requireRole('client'), async (req, res, next) => {
+  try {
+    const tasks = await listClientTasks(req.userId);
+    res.json({ success: true, tasks });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/youth/mine', requireRole('youth'), async (req, res, next) => {
+  try {
+    const tasks = await listYouthTasks(req.userId);
     res.json({ success: true, tasks });
   } catch (error) {
     next(error);
