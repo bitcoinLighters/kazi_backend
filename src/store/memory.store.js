@@ -7,7 +7,8 @@ export const store = {
   tasks: new Map(),
   submissions: new Map(),
   payments: new Map(),
-  ledger: []
+  ledger: [],
+  paymentLocks: new Set()
 };
 
 export const now = () => new Date().toISOString();
@@ -23,4 +24,3 @@ export const userWallet = (userId) => {
     entries
   };
 };
-

@@ -8,4 +8,3 @@ router.get('/', (req, res) => res.json({ success: true, data: userWallet(req.use
 router.get('/earnings', (req, res) => res.json({ success: true, data: { entries: userWallet(req.user.id).entries.filter((entry) => entry.type === 'earning') } }));
 router.post('/withdraw', (_req, res) => res.status(501).json({ success: false, message: 'Mobile-money withdrawal is a stretch feature and is not implemented yet' }));
 export default router;
-

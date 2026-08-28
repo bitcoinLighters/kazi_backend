@@ -14,9 +14,9 @@ The use cases are divided into small slices so the team can build and demo the m
 4. Atomic task acceptance so one task cannot be claimed twice.
 5. Work submission using text and an optional file reference.
 6. Client review, approval, or request for changes.
-7. Lightning payment orchestration through a Polar/LND node.
+7. Lightning payment orchestration through the LNbits Room API.
 8. Youth balance, payment confirmation, and earnings history.
-9. Optional stretch: sats-to-RWF/mobile-money withdrawal.
+9. Mobile-money withdrawal remains intentionally out of scope for this payment MVP.
 
 The recommended demo path is: sign in as client → post task → sign in as youth → accept task → submit work → client approves and pays → youth sees the updated balance.
 
@@ -91,8 +91,32 @@ GET http://localhost:5000/api-docs
 | `LND_REST_URL` | No for scaffold | Polar/LND REST endpoint |
 | `LND_MACAROON` | No for scaffold | LND authentication credential |
 | `LND_TLS_CERT_PATH` | No for scaffold | Local LND TLS certificate path |
+| `LNBITS_URL` | Required for payment | Room LNbits base URL |
+| `LNBITS_ADMIN_KEY` | Required for payment | Backend-only key used to pay invoices |
+| `LNBITS_INVOICE_KEY` | Required for payment | Backend-only key used to decode/check invoices |
+| `LNBITS_TIMEOUT_MS` | No | LNbits request timeout, defaults to `15000` |
 
 `*` Either `MONGODB_URI` or `MONGO_URI_NOT_SRV` must be available when `CONNECT_DATABASE=true`. For the current backend-only scaffold, database connection is disabled by default and data is held in memory until your colleague supplies the Atlas repository/models.
+
+## Lightning payment flow
+
+The worker submits a BOLT11 invoice with their work. The client only approves the task. The backend takes `rewardSats` from the task record, calls LNbits with the stored worker invoice, verifies settlement, then marks the task `paid` and adds an earning ledger entry. No LNbits key is returned by any endpoint.
+
+Payment endpoint:
+
+```text
+POST /api/tasks/:taskId/approve-payment
+```
+
+Payment statuses are `PENDING`, `PROCESSING`, `PAID`, and `FAILED`. Failed payments leave the task in `reviewing`; repeated requests after a successful payment return the existing payment and never pay the invoice twice. The application ledger is the source of truth for Kazi earnings; the LNbits wallet balance is a separate infrastructure balance and is not presented as a worker balance.
+
+Set these values only in `.env` or the ignored Atlas credential environment file:
+
+```env
+LNBITS_URL=https://your-room-lnbits-url
+LNBITS_ADMIN_KEY=your_admin_key
+LNBITS_INVOICE_KEY=your_invoice_key
+```
 
 ## Planned API contract
 
@@ -101,10 +125,10 @@ GET http://localhost:5000/api-docs
 | Auth | `POST /api/auth/signup`, `POST /api/auth/login` | UC-1 |
 | Tasks | `GET /api/tasks`, `GET /api/tasks/:id`, `POST /api/tasks`, `POST /api/tasks/:id/accept` | UC-2–5 |
 | Submissions | `POST /api/tasks/:id/submissions`, `GET /api/submissions/:id`, `POST /api/submissions/:id/request-changes` | UC-6–7 |
-| Payments | `POST /api/submissions/:id/approve`, `GET /api/payments/:id` | UC-8–9 |
+| Payments | `POST /api/tasks/:id/approve-payment`, `GET /api/payments/:id` | UC-8–9 |
 | Wallet | `GET /api/wallet`, `GET /api/wallet/earnings`, `POST /api/wallet/withdraw` | UC-10–11 |
 
-For the one-day MVP, file uploads can initially be represented by a URL or filename, and withdrawal can remain a clearly labelled stretch feature.
+For the one-day MVP, file uploads can initially be represented by a URL or filename. The worker must provide a BOLT11 invoice during submission; the client never provides the invoice.
 
 ## Engineering rules for the team
 

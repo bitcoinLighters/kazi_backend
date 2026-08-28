@@ -22,7 +22,11 @@ export const env = {
   lndRestUrl: process.env.LND_REST_URL || 'http://127.0.0.1:8080',
   lndMacaroon: process.env.LND_MACAROON || '',
   lndTlsCertPath: process.env.LND_TLS_CERT_PATH || '',
-  connectDatabase: process.env.CONNECT_DATABASE === 'true'
+  connectDatabase: process.env.CONNECT_DATABASE === 'true',
+  lnbitsUrl: (process.env.LNBITS_URL || '').replace(/\/$/, ''),
+  lnbitsAdminKey: process.env.LNBITS_ADMIN_KEY || '',
+  lnbitsInvoiceKey: process.env.LNBITS_INVOICE_KEY || '',
+  lnbitsTimeoutMs: Number(process.env.LNBITS_TIMEOUT_MS || 15000)
 };
 
 export const getMongoUri = () => env.mongoUri || required('MONGODB_URI');
